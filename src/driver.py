@@ -1,6 +1,7 @@
 # ============================================================
 # pi4gpu – GPU Treiber + Simpel3D Engine Kopplung
 # Entwickelt von (Zoviloplay – YouTube)
+# Effekte deaktiviert: GPU zeichnet nur rohe Objekte
 # ============================================================
 
 import os
@@ -20,15 +21,12 @@ class GPUDriver:
 
         # ------------------------------------------------------------
         # Interne Renderauflösung (720p)
-        # GPU rendert IMMER in dieser Auflösung
-        # Monitor bleibt groß (1440p/1900p)
         # ------------------------------------------------------------
         self.internal_width = 1280
         self.internal_height = 720
 
         # ------------------------------------------------------------
         # Ausgabeauflösung des Monitors
-        # Wird später automatisch erkannt
         # ------------------------------------------------------------
         self.display_width = 2560
         self.display_height = 1440
@@ -39,9 +37,6 @@ class GPUDriver:
         self.engine = Simpel3D()
 
     def load_config(self):
-        # ------------------------------------------------------------
-        # gpu.conf laden (Einstellungen des Treibers)
-        # ------------------------------------------------------------
         print("Lade gpu.conf...")
         if os.path.exists("gpu.conf"):
             with open("gpu.conf", "r") as f:
@@ -66,10 +61,6 @@ class GPUDriver:
             print("gpu.conf nicht gefunden – Standardwerte werden benutzt.")
 
     def init_gpu(self):
-        # ------------------------------------------------------------
-        # GPU initialisieren
-        # Speicher setzen + OpenGL ES aktivieren
-        # ------------------------------------------------------------
         print("Initialisiere GPU...")
         os.system(f"sudo raspi-config nonint do_memory_split {self.memory}")
         print("GPU Speicher gesetzt:", self.memory, "MB")
@@ -77,13 +68,24 @@ class GPUDriver:
         self.running = True
 
         # ------------------------------------------------------------
+        # Effekte deaktivieren (maximale Performance)
+        # ------------------------------------------------------------
+        glDisable(GL_LIGHTING)
+        glDisable(GL_FOG)
+        glDisable(GL_BLEND)
+        glDisable(GL_DITHER)
+        glDisable(GL_MULTISAMPLE)
+        glDisable(GL_DEPTH_TEST)
+        glDisable(GL_ALPHA_TEST)
+
+        print("Alle GPU-Effekte deaktiviert – Rohmodus aktiv.")
+
+        # ------------------------------------------------------------
         # Interner Framebuffer (720p)
-        # Hier rendert Simpel3D hinein
         # ------------------------------------------------------------
         self.internal_fbo = glGenFramebuffers(1)
         glBindFramebuffer(GL_FRAMEBUFFER, self.internal_fbo)
 
-        # interne Renderfläche
         self.internal_tex = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, self.internal_tex)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self.internal_width, self.internal_height, 0, GL_RGB, GL_UNSIGNED_BYTE, None)
@@ -101,10 +103,6 @@ class GPUDriver:
         self.engine.add(cube)
 
     def render_loop(self):
-        # ------------------------------------------------------------
-        # Haupt-Renderloop
-        # Engine → 720p → Upscaling → Monitor
-        # ------------------------------------------------------------
         print("Starte Render-Loop...")
         frame = 0
 
@@ -115,7 +113,7 @@ class GPUDriver:
             glBindFramebuffer(GL_FRAMEBUFFER, self.internal_fbo)
             glViewport(0, 0, self.internal_width, self.internal_height)
 
-            # Engine rendern
+            # Engine rendern (ohne Effekte)
             self.engine.render()
 
             # ------------------------------------------------------------
@@ -138,17 +136,11 @@ class GPUDriver:
             frame += 1
 
     def shutdown(self):
-        # ------------------------------------------------------------
-        # Treiber sauber beenden
-        # ------------------------------------------------------------
         print("GPU-Treiber wird beendet...")
         self.running = False
 
 
 if __name__ == "__main__":
-    # ------------------------------------------------------------
-    # Startpunkt des Treibers
-    # ------------------------------------------------------------
     driver = GPUDriver()
     driver.load_config()
     driver.init_gpu()
