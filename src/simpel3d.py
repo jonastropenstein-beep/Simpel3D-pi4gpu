@@ -1,6 +1,7 @@
-# Simpel3D – Basis 3D Engine
-# von Jonas (zoviloplay)
+# Simpel3D – Mini 3D Engine für pi4gpu
+# von zoviloplay (youtuber)
 
+from OpenGL.GL import *
 import math
 
 class Vector3:
@@ -25,7 +26,7 @@ class Object3D:
         self.rotation.y += y
         self.rotation.z += z
 
-class Renderer:
+class Simpel3D:
     def __init__(self):
         self.objects = []
 
@@ -33,17 +34,11 @@ class Renderer:
         self.objects.append(obj)
 
     def render(self):
-        print("Rendering Szene...")
+        # Hier wird später echtes Rendering stehen
+        glClearColor(0.1, 0.1, 0.1, 1)
+        glClear(GL_COLOR_BUFFER_BIT)
+
+        # Debug-Ausgabe
         for obj in self.objects:
-            print(f"Objekt @ Pos({obj.position.x}, {obj.position.y}, {obj.position.z}) "
+            print(f"Render Objekt: Pos({obj.position.x}, {obj.position.y}, {obj.position.z}) "
                   f"Rot({obj.rotation.x}, {obj.rotation.y}, {obj.rotation.z})")
-
-if __name__ == "__main__":
-    renderer = Renderer()
-
-    cube = Object3D()
-    cube.move(1, 2, 3)
-    cube.rotate(45, 0, 0)
-
-    renderer.add(cube)
-    renderer.render()
