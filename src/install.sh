@@ -1,9 +1,10 @@
 #!/bin/bash
-echo "Starte Installation von Simpel3D-pi4gpu..."
+# Simpel3D-pi4gpu Installer
+# von Zoviloplay (YouTube)
+
+echo "Installiere Simpel3D-pi4gpu..."
 sudo apt update
-sudo apt install -y python3
-echo "Kopiere GPU-Konfiguration..."
-sudo cp gpu.conf /etc/simpel3d.conf
-echo "Starte Treiber..."
-python3 driver.py
+sudo apt install -y python3 python3-pip python3-opengl
+git clone https://github.com/jonastropenstein-beep/Simpel3D-pi4gpu.git
+cd Simpel3D-pi4gpu/src
 echo "Installation abgeschlossen!"
